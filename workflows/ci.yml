@@ -1,0 +1,54 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run checkpoint tests
+        run: >-
+          pytest tests/test_cp1.py tests/test_cp2.py tests/test_cp3.py
+          tests/test_cp4.py --ignore=tests/test_cp5.py -q
+
+  build:
+    name: Build Docker image
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build --tag day12-chat:${{ github.sha }} .
+
+  deploy:
+    name: Deploy to Render
+    needs: [test, build]
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      secrets.RENDER_DEPLOY_HOOK_URL != ''
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK_URL"
