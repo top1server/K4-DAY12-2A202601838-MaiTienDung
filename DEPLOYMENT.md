@@ -1,7 +1,7 @@
 # Thông Tin Deploy — Checkpoint 5
 
-> Hồ sơ CP5 hiện dùng phương án local fallback bằng Docker Compose.
-> `pytest tests/test_cp5.py` sẽ gọi service tại `http://localhost:8000`.
+> Service CP5 đã deploy thật trên Render.
+> `pytest tests/test_cp5.py` sẽ gọi public URL bên dưới.
 >
 > **Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị token vào đây.**
 > Repo này công khai — dán token vào là mất token.
@@ -18,19 +18,19 @@
 
 | Mục | Nội dung |
 |-----|----------|
-| Public URL | http://localhost:8000 (local fallback, không phải URL public) |
-| Platform | Local Docker Compose fallback (thay thế Railway) |
+| Public URL | https://day12-chat-jrea.onrender.com |
+| Platform | Render |
 | Ngày deploy | 2026-08-10 |
 
-## Biến Môi Trường Đã Set Cho Local Fallback
+## Biến Môi Trường Đã Set Trên Render
 
 Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 | Biến | Đã set | Ghi chú |
 |------|--------|---------|
-| `PORT` | ✅ | Docker Compose truyền vào container |
-| `API_TOKEN` | ✅ | đặt trong `.env` local, không commit |
-| `REDIS_URL` | ✅ | Redis service `redis` trong Docker Compose |
+| `PORT` | ✅ | Render tự gán |
+| `API_TOKEN` | ✅ | đặt trong Render dashboard, không nằm trong repo |
+| `REDIS_URL` | ✅ | Render Key Value connection string |
 | `BUCKET_CAPACITY` | ✅ | 10 |
 | `REFILL_PER_MINUTE` | ✅ | 10 |
 | `DAILY_BUDGET_USD` | ✅ | 1.0 |
@@ -74,7 +74,6 @@ done; echo
 Dán output của các lệnh trên vào đây:
 
 ```
-LOCAL_FALLBACK=true
 GET /healthz  → 200 {"status":"ok"}
 GET /readyz   → 200 {"status":"ready","redis":true}
 POST /chat không token → 401
@@ -100,5 +99,5 @@ Không đăng ký được tài khoản cloud? Vẫn nộp được bài, nhưng
    `http://localhost:8000`
 5. Ghi rõ lý do không deploy được vào phần dưới đây:
 
-Cloud deployment chưa thực hiện trong checkpoint này; service được chạy và kiểm tra
-local bằng Docker Compose với Redis container.
+Service đã deploy thật trên Render; Redis được tạo cùng Blueprint và nối qua
+`REDIS_URL`.
